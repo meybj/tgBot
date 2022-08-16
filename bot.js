@@ -18,11 +18,12 @@ const {
   handleSelectPack,
   handleHidePack,
   handleRestorePack,
+  handleCatalog,
   handleCopyPack,
   handleLanguage,
   handleEmoji,
+  handleRoundVideo,
   handleStickerUpade,
-  handlePublish,
   handleInlineQuery
 } = require('./handlers')
 const scenes = require('./scenes')
@@ -149,23 +150,8 @@ bot.start((ctx, next) => {
   }
   return next()
 })
-bot.hears(['/packs', match('cmd.start.btn.packs')], ctx => {
-  ctx.state.type = 'common'
-  return handlePacks(ctx)
-})
-bot.hears(['/inline', match('cmd.start.btn.inline')], ctx => {
-  ctx.state.type = 'inline'
-  return handlePacks(ctx)
-})
-bot.hears(['/anim', match('cmd.start.btn.anim')], ctx => {
-  ctx.state.type = 'animated'
-  return handlePacks(ctx)
-})
-
-bot.hears(['/video', match('cmd.start.btn.video')], ctx => {
-  ctx.state.type = 'video'
-  return handlePacks(ctx)
-})
+bot.command('packs', handlePacks)
+bot.action(/packs:(.*)/, handlePacks)
 
 bot.start((ctx, next) => {
   if (ctx.startPayload.match(/s_(.*)/)) return handleSelectPack(ctx)
@@ -176,19 +162,23 @@ bot.hears(['/new', match('cmd.start.btn.new')], (ctx) => ctx.scene.enter('сhoos
 bot.action(/new_pack/, (ctx) => ctx.scene.enter('сhoosePackType'))
 bot.hears(['/donate', '/club', '/start club', match('cmd.start.btn.club')], handleClub)
 bot.hears(/addstickers\/(.*)/, handleCopyPack)
+bot.command('publish', (ctx) => ctx.scene.enter('catalogPublishNew'))
+bot.command('catalog', handleCatalog)
 bot.command('public', handleSelectPack)
 bot.command('emoji', handleEmoji)
+bot.command('round', handleRoundVideo)
 bot.command('copy', (ctx) => ctx.replyWithHTML(ctx.i18n.t('cmd.copy')))
 bot.command('restore', (ctx) => ctx.replyWithHTML(ctx.i18n.t('cmd.restore')))
 bot.command('original', (ctx) => ctx.scene.enter('originalSticker'))
+bot.command('search', (ctx) => ctx.scene.enter('searchStickerSet'))
+bot.action(/catalog:publish:(.*)/, (ctx) => ctx.scene.enter('catalogPublish'))
 bot.command('lang', handleLanguage)
 bot.command('error', ctx => ctx.replyWithHTML(error))
 
-bot.use(handlePublish)
 bot.use(handleInlineQuery)
 
 // sticker detect
-bot.on(['sticker', 'document', 'photo', 'video'], limitPublicPack, handleSticker)
+bot.on(['sticker', 'document', 'photo', 'video', 'video_note'], limitPublicPack, handleSticker)
 
 // callback
 bot.action(/(set_pack):(.*)/, handlePacks)

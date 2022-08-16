@@ -10,9 +10,9 @@ const i18n = new I18n({
   defaultLanguageOnMissing: true
 })
 
-module.exports = async (ctx) => {
-  const localseFile = fs.readdirSync('./locales/')
+const localseFile = fs.readdirSync('./locales/')
 
+module.exports = async (ctx) => {
   const locales = {}
 
   localseFile.forEach((fileName) => {
@@ -39,7 +39,7 @@ module.exports = async (ctx) => {
       button.push(Markup.callbackButton(locales[key].flag, `set_language:${key}`))
     })
 
-    ctx.reply('🇷🇺 Выберите язык\n🇺🇸 Choose language\n\nHelp with translation: https://crwd.in/fStikBot', {
+    ctx.reply('🇺🇸 Choose language\n\nHelp with translation: https://crwd.in/fStikBot', {
       reply_markup: Markup.inlineKeyboard(button, {
         columns: 2
       })

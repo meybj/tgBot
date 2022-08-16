@@ -1,8 +1,19 @@
 const Markup = require('telegraf/markup')
 const { addSticker, addStickerText } = require('../utils')
 
+const escapeHTML = (str) => str.replace(
+  /[&<>'"]/g,
+  (tag) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    "'": '&#39;',
+    '"': '&quot;'
+  }[tag] || tag)
+)
+
 module.exports = async (ctx) => {
-  await ctx.replyWithChatAction('upload_document').catch(() => {})
+  ctx.replyWithChatAction('upload_document').catch(() => {})
 
   let messageText = ''
   let replyMarkup = {}
@@ -42,6 +53,11 @@ module.exports = async (ctx) => {
       if (ctx.message.caption) stickerFile.emoji = ctx.message.caption
       break
 
+    case 'video_note':
+        stickerFile = ctx.message.video_note
+        stickerFile.video_note = true
+    break
+
     case 'photo':
       // eslint-disable-next-line prefer-destructuring
       stickerFile = ctx.message.photo.slice(-1)[0]
@@ -63,12 +79,13 @@ module.exports = async (ctx) => {
   if (stickerFile) {
     if (stickerFile.is_animated && (!ctx.session.userInfo.stickerSet || !ctx.session.userInfo.stickerSet.inline)) {
       stickerSet = ctx.session.userInfo.animatedStickerSet
-    } else if (stickerFile.is_video && (!ctx.session.userInfo.stickerSet || !ctx.session.userInfo.stickerSet.inline)) {
+    } else if (stickerFile.is_video || stickerFile.video_note && (!ctx.session.userInfo.stickerSet || !ctx.session.userInfo.stickerSet.inline)) {
       stickerSet = ctx.session.userInfo.videoStickerSet
     } else {
       stickerSet = ctx.session.userInfo.stickerSet
     }
-
+    if (ctx.message.caption?.includes('roundit')) stickerFile.video_note = true
+    if (ctx.message.caption?.includes('cropit')) stickerFile.forceCrop = true
     const originalSticker = await ctx.db.Sticker.findOne({
       stickerSet,
       fileUniqueId: stickerFile.file_unique_id,
@@ -107,6 +124,26 @@ module.exports = async (ctx) => {
 
         messageText = result.messageText
         replyMarkup = result.replyMarkup
+
+        if (typeof stickerSet?.publishDate === 'undefined' && !stickerSet?.animated && !stickerSet?.inline) {
+          const countStickers = await ctx.db.Sticker.count({
+            stickerSet,
+            deleted: false
+          })
+
+          if ([10, 15, 30, 50, 80, 120].includes(countStickers)) {
+            setTimeout(async () => {
+              await ctx.replyWithHTML(ctx.i18n.t('sticker.add.catalog_offer', {
+                title: escapeHTML(stickerSet.title),
+                link: `${ctx.config.stickerLinkPrefix}${stickerSet.name}`
+              }), {
+                reply_markup: Markup.inlineKeyboard([
+                  Markup.callbackButton(ctx.i18n.t('callback.pack.btn.catalog_add'), `catalog:publish:${stickerSet.id}`)
+                ])
+              })
+            }, 1000 * 2)
+          }
+        }
       } else {
         ctx.session.previousSticker = {
           file: stickerFile

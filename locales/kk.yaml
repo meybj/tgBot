@@ -1,5 +1,5 @@
 ---
-language_name: '🇺🇸 English'
+language_name: '🇰🇿Қазақ'
 ratelimit: Not so often!
 cmd:
   start:
@@ -30,49 +30,49 @@ cmd:
       • Search by keywords or in prepared tabs
       • Don't forget to rate to promote or lower the sticker pack in the rankings
     commands:
-      start: '📜 Start menu'
-      packs: '📁 Sticker packs'
-      new: '📥 Create a new sticker pack'
-      original: '🔍 Find original sticker'
-      restore: '🔀 Restore a sticker pack'
-      copy: '📋 Copy a sticker pack'
-      emoji: '📝 Change emoji suffix'
+      start: '📜 Бастапқы мәзір'
+      packs: '📁 Стикерпактарым'
+      new: '📥 Жаңа стикерпак құру'
+      original: '🔍 Стикердің түпнұсқасын табу'
+      restore: '🔀 Стикерпакті қалпына келтіру'
+      copy: '📋 Стикерпакті көшіру'
+      emoji: '📝 Эмодзи-суффискін өзгерту'
       round: '🎥 Round shape video'
-      lang: '🌐 Change language'
-      donate: '☕️ Support the developer'
+      lang: '🌐 Тіл ауыстыру'
+      donate: '☕️ Құрастырушыны қолдау'
     btn:
-      new: '📥 Create new'
+      new: '📥 Жаңасын құру'
       catalog: '💖 Open catalog'
   inline:
-    switch_pm: Select sticker pack
+    switch_pm: Стикерпак таңдау
   restore: |
-    <b>🗃 Sticker pack restoration</b>
+    <b>🗃 Стикерпакты қалпына ү</b>
 
-    If you previously created a sticker pack through this bot and cannot find it in the list of your sticker packs, then you can restore it back.
+    Бұрын осы бот арқылы стикерпак құрып қазір оны стикерпак тізімінде таба алмай тұрсаңыз, оны қалпына келтіруге болады.
 
-    <b>To do this, you need to perform several actions:</b>
-    1. Open @Stickers bot
-    2. Send <code>/packstats</code> command
-    3. Find and choose the required sticker pack
-    4. Forward the received message to the bot
-    5. If restoration is successful - bot informs about it
+    <b>Ол үшін, келесідегідей әрекеттерді орындау керек: </b>
+    1. @Stickers ботын ашыңыз
+    2. <code>/packstats</code> командасын жіберіңіз
+    3. Керек стикерпакты тауып, таңдаңыз
+    4. Келген хабарламаны ботқа жөнелтіңіз
+    5. Қалпына келтіру сәтті орындалса бот хабар береді
   copy: |
-    <b>🗄 Copy sticker pack</b>
+    <b>🗄 Стикерпак көшіру</b>
 
-    If you supported the bot, copying all the stickers from any sticker pack with a new name will be available.
-    In order to copy the sticker pack you just need to send a link to it to the bot.
+    Ботты қолдаған болсаңыз, жаңа ат қойып кез келген стикерпактан барлық стикерді көшіру мүмкіндігі пайда болады.
+    Стикерпакты көшіру үшін сілтемесін осы ботқа жіберіңіз.
   packs:
     info: |
-      <b>🌟 Sticker packs:</b>
+      <b>🌟 Стикерпактарыңыз:</b>
     types:
-      static: '🌟 Static'
+      static: '🌟 Статикалық'
       animated: '✨ Vector'
-      video: '📹 Video'
-      inline: '💫 Inline'
+      video: '📹 Видео'
+      inline: '💫 Инлайн'
     empty: |
-      <b>You have no sticker packs yet.</b>
-      To create, write a command /new
-    inline_title: Inline sticker pack
+      <b>Әзірше еш стикерпагыңыз жоқ көрінеді</b>
+      Құраймын десеңіз, /new командасын жіберіңіз
+    inline_title: Инлайн стикерпак
   club: |
     ☕️ Supporting a bot development
 
@@ -229,10 +229,10 @@ sticker:
         The file is too big to process. Please reduce the quality and duration before sending.
 scenes:
   new_pack:
-    static: '🌟 Static'
+    static: '🌟 Статикалық'
     animated: '✨ Vector'
-    video: '📹 Video'
-    inline: '💫 Inline'
+    video: '📹 Видео'
+    inline: '💫 Инлайн'
     pack_type: |
       <b><u>Choose stickerpack type</u></b>
 

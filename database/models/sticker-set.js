@@ -18,7 +18,6 @@ const stickerSetsSchema = mongoose.Schema({
   },
   title: {
     type: String,
-    text: true,
     required: true
   },
   animated: {
@@ -38,14 +37,49 @@ const stickerSetsSchema = mongoose.Schema({
     type: Boolean,
     default: false
   },
+  thirdParty: {
+    type: Boolean,
+    default: false
+  },
   hide: {
     type: Boolean,
     default: false
+  },
+  public: {
+    type: Boolean,
+    default: false
+  },
+  publishDate: {
+    type: Date,
+    index: true
+  },
+  about: {
+    description: String,
+    tags: [String],
+    languages: [String],
+    safe: {
+      type: Boolean,
+      default: false
+    },
+    verified: {
+      type: Boolean,
+      default: false,
+      index: true
+    }
   }
 }, {
   timestamps: true
 })
 
-stickerSetsSchema.index({ title: 'text' })
+stickerSetsSchema.index({
+  public: 1,
+  'about.description': 'text',
+  title: 'text'
+}, {
+  weights: {
+    'about.description': 5,
+    title: 1
+  }
+})
 
 module.exports = stickerSetsSchema

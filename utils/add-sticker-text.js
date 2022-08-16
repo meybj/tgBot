@@ -38,18 +38,14 @@ module.exports = async (ctx, addStickerResult) => {
         Markup.urlButton(ctx.i18n.t('callback.pack.btn.use_pack'), addStickerResult.ok.link)
       ])
     }
-
-    // const stickersCount = await ctx.db.Sticker.count({ stickerSet, deleted: false })
-
-    // if ([7, 10, 15, 20, 30, 50, 70].includes(stickersCount)) {
-    //   await ctx.replyWithHTML(ctx.i18n.t('sticker.add.offer_publish'))
-    // }
   } else if (addStickerResult.error) {
     if (addStickerResult.error.telegram) {
       if (addStickerResult.error.telegram.description.includes('TOO_MUCH')) {
         messageText = ctx.i18n.t('sticker.add.error.stickers_too_much')
       } else if (addStickerResult.error.telegram.description.includes('STICKERSET_INVALID')) {
         messageText = ctx.i18n.t('sticker.add.error.stickerset_invalid')
+      } else if (addStickerResult.error.telegram.description.includes('file is too big')) {
+        messageText = ctx.i18n.t('sticker.add.error.too_big')
       } else {
         messageText = ctx.i18n.t('error.telegram', {
           error: addStickerResult.error.telegram.description

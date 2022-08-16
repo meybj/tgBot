@@ -30,8 +30,11 @@ const userSchema = mongoose.Schema({
     ref: 'StickerSet'
   },
   autoEmoji: {
+    type: Boolean
+  },
+  roundVideo: {
     type: Boolean,
-    default: false
+    default: true
   },
   inlineType: {
     type: String
@@ -43,6 +46,21 @@ const userSchema = mongoose.Schema({
   payments: Array,
   locale: String,
   blocked: {
+    type: Boolean,
+    default: false
+  },
+  webapp: {
+    country: String,
+    platform: String,
+    browser: String,
+    version: String,
+    os: String
+  },
+  moderator: {
+    type: Boolean,
+    default: false
+  },
+  publicBan: {
     type: Boolean,
     default: false
   }
