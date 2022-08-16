@@ -77,7 +77,7 @@ module.exports = async (ctx) => {
         if (stickerSet.inline) {
           await ctx.replyWithHTML(ctx.i18n.t('callback.pack.set_inline_pack', {
             title: escapeHTML(stickerSet.title),
-            botUsername: ctx.options.username
+            botUsername: ''
           }), {
             reply_markup: Markup.inlineKeyboard([
               [
