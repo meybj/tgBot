@@ -8,7 +8,9 @@ const stickerSetsSchema = mongoose.Schema({
   },
   passcode: {
     type: String,
-    index: true
+    index: true,
+    unique: true,
+    sparse: true
   },
   name: {
     type: String,
@@ -32,6 +34,7 @@ const stickerSetsSchema = mongoose.Schema({
     type: Boolean,
     default: false
   },
+  frameType: String,
   emojiSuffix: String,
   create: {
     type: Boolean,
@@ -59,13 +62,18 @@ const stickerSetsSchema = mongoose.Schema({
     languages: [String],
     safe: {
       type: Boolean,
-      default: false
+      default: false,
+      index: true
     },
     verified: {
       type: Boolean,
       default: false,
       index: true
     }
+  },
+  moderated: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

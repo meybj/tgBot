@@ -2,6 +2,9 @@ const StegCloak = require('stegcloak')
 const Scene = require('telegraf/scenes/base')
 const Markup = require('telegraf/markup')
 const {
+  match
+} = require('telegraf-i18n')
+const {
   rword
 } = require('rword')
 const { addSticker } = require('../utils')
@@ -40,6 +43,7 @@ const сhoosePackType = new Scene('сhoosePackType')
     ]).resize()
   })
 })
+
 сhoosePackType.on('message', async (ctx) => {
   if (ctx.message.text === ctx.i18n.t('scenes.new_pack.animated')) {
     ctx.session.scene.newPack.animated = true
@@ -99,6 +103,8 @@ newPackName.enter((ctx) => ctx.replyWithHTML(ctx.i18n.t('scenes.new_pack.pack_na
 }))
 
 newPackName.on('text', async (ctx) => {
+  ctx.session.scene.newPack.name = ctx.message.text
+
   return ctx.scene.enter('newPackConfirm')
 })
 
@@ -108,7 +114,6 @@ newPackConfirm.enter(async (ctx, next) => {
   if (!ctx.session.userInfo) ctx.session.userInfo = await ctx.db.User.getData(ctx.from)
 
   const inline = !!ctx.session.scene?.newPack?.inline
-  ctx.session.scene.newPack.name = ctx.message.text
 
   let { name, title, animated, video } = ctx.session.scene.newPack
 
@@ -118,13 +123,13 @@ newPackConfirm.enter(async (ctx, next) => {
     name = name.replace(/[^0-9a-z_]/gi, '')
   }
 
-  if (name.length >= ctx.config.charNameMax) {
+  if (!name || name.length >= ctx.config.charNameMax) {
     await ctx.replyWithHTML(ctx.i18n.t('scenes.new_pack.error.name_long', {
       max: ctx.config.charNameMax
     }), {
       reply_to_message_id: ctx.message.message_id
     })
-    return ctx.scene.reenter()
+    return ctx.scene.enter('newPackName')
   }
 
   if (!inline) name += nameSuffix
@@ -153,7 +158,12 @@ newPackConfirm.enter(async (ctx, next) => {
       return ctx.scene.enter('newPackName')
     }
 
-    createNewStickerSet = await ctx.telegram.createNewStickerSet(ctx.from.id, name, title, stickers).catch((error) => {
+    createNewStickerSet = await ctx.telegram.createNewStickerSet(
+      ctx.from.id,
+      name,
+      title,
+      stickers
+    ).catch((error) => {
       return { error }
     })
 
@@ -185,7 +195,7 @@ newPackConfirm.enter(async (ctx, next) => {
     if (!inline) {
       const getStickerSet = await ctx.telegram.getStickerSet(name)
       const stickerInfo = getStickerSet.stickers.slice(-1)[0]
-      await ctx.telegram.deleteStickerFromSet(stickerInfo.file_id)
+      await ctx.telegram.deleteStickerFromSet(stickerInfo.file_id).catch(() => {})
     }
 
     const userStickerSet = await ctx.db.StickerSet.newSet({
@@ -254,12 +264,17 @@ newPackConfirm.enter(async (ctx, next) => {
     }
 
     if (!ctx.session.scene.copyPack) {
-      await ctx.scene.leave()
-      return ctx.replyWithHTML('👌', {
-        reply_markup: {
-          remove_keyboard: true
-        }
-      })
+      if (video) {
+        return ctx.scene.enter('packFrame')
+      } else {
+        await ctx.replyWithHTML('👌', {
+          reply_markup: {
+            remove_keyboard: true
+          }
+        })
+
+        return ctx.scene.leave()
+      }
     }
 
     const originalPack = ctx.session.scene.copyPack
@@ -311,4 +326,9 @@ newPackConfirm.enter(async (ctx, next) => {
   }
 })
 
-module.exports = [сhoosePackType, newPackTitle, newPackName, newPackConfirm]
+module.exports = [
+  сhoosePackType,
+  newPackTitle,
+  newPackName,
+  newPackConfirm
+]

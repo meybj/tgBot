@@ -4,22 +4,27 @@ ratelimit: Bunchalik tez-tez emas!
 cmd:
   start:
     info: |
-      Assalomu alaykum <b>${name}</b>!
-      Menga Stiker yoki fotosurat yuboring, men uni stikerlar to'plamingizga qo'shib qo'yaman.
-      O'chirish uchun - Stikerni qayta yuboring
+      Hi, <b>${name}</b>!
 
-      /packs - stikerlar to'plamining ro'yxati
-      /animpacks - animatsion stikerlarlar to'plamining ro'yxati
-      /new - yangi stikerlar to'plamini yaratish
-      /original - asl stikerni topish
-      /restore - stikerlar to'plamini qayta tiklash
-      /copy - stikerlar to'plamidan nusxa olish
-      /lang - tilni o'zgartirish
+      Send me a sticker, GIF, video, file, or photo and I will add it to your sticker pack.
+      Want to remove it from your sticker pack? Send it once again.
 
-      /donate - dasturchini qo'llab-quvatlash
+      /packs - get your packs
+      /new - create a new sticker pack
+
+      /original - find original sticker
+      /restore - restore a sticker pack
+      /copy - copy a sticker pack
+      /emoji - change emoji suffix for current sticker pack
+      /frame - сhange frame for current sticker pack
+      /lang - change language
+
+      /donate - support the developer
+
+      🧑‍🔧 Contacts: @ly_oBot
 
       GitHub: https://github.com/LyoSU/fStikBot
-      👨🏻‍💻 Dasturchining kanali: @LyBlog
+      👨🏻‍💻 Developer channel: @LyBlog
     catalog: |
       <b>😻 Siz bizning katalogimizda yangi stikerlar to‘plamini topishingiz mumkin</b>
 
@@ -30,6 +35,8 @@ cmd:
       start: '📜 Start menu'
       packs: '📁 Sticker packs'
       new: '📥 Create a new sticker pack'
+      catalog: '📖 Catalog'
+      publish: '🌐 Publish sticker pack in catalog'
       original: '🔍 Find original sticker'
       restore: '🔀 Restore a sticker pack'
       copy: '📋 Copy a sticker pack'
@@ -40,6 +47,11 @@ cmd:
     btn:
       new: '📥 Create new'
       catalog: '💖 Katalogni ochish'
+      catalog_mini: '💖 Catalog'
+      catalog_browser: '🌐 Open in browser'
+      catalog_browser_mini: '🌐 In browser'
+      catalog_app: '📱 Download Android app'
+      catalog_app_mini: '📱 Android app'
   inline:
     switch_pm: Выбрать стикерпак
   restore: |
@@ -98,6 +110,34 @@ cmd:
       Videolar endi yumaloq shaklga ega bo'ladi
     disabled: |
       Videolar endi yumaloq shaklga ega bo‘lmaydi
+coedit:
+  info: |
+    <b>👥 Co-editing sticker pack</b>
+
+    Link for co-editing <a href="${link}">${title}</a>:
+    <code>${colink}</code>
+
+    <b>How to use:</b>
+    1. Send the link to the person you want to give access to the sticker pack
+    2. After clicking on the link, they need to press "start" and they will be added to the editors
+    3. The editor can add, delete and edit stickers in the sticker pack
+
+    <b>Editors:</b>
+    ${editors}
+
+    <i>To remove editors, you need to reset the link</i>
+  no_editors: |
+    No editors yet
+  btn:
+    send: '📤 Send link'
+    reset: '🔁 Reset link'
+  share: |
+    Follows the link and press "start" to co-edit the sticker pack "${title}"
+  reset: |
+    <b>🔁 Link reset successful</b>
+
+    New link for co-editing <a href="${link}">${title}</a>:
+    <code>${colink}</code>
 callback:
   pack:
     answerCbQuer:
@@ -136,6 +176,7 @@ callback:
       restore: '✅ Qayta tiklash'
       use_pack: Использовать стикерпак
       search_gif: Search GIF
+      coedit: '👥 Co-edit'
       catalog_add: '🗂 Add to catalog'
       catalog_edit: '📝 Katalogda tahrirlash'
       catalog_delete: '🗑 Katalogdan oʻchirish'
@@ -212,6 +253,10 @@ sticker:
 
         Bot hali ham avvalgi videoni qayta ishlamoqda...
         Qayta ishlash ustuvorligini oshirish va navbatga bir nechta stiker qo‘shish imkoniyatini oshirish uchun siz botni ishlab chiqishni (/dona) qo‘llab-quvvatlashingiz mumkin.
+      timeout: |
+        <b>Error!</b>
+
+        Try again later.
       convert: |
         <b>Xato!</b>
         Afsuski, bot videongizni aylantira olmadi.
@@ -295,7 +340,15 @@ scenes:
   catalog:
     publish:
       publish_new: |
-        Uchinchi tomon stikerlar toʻplamini nashr qilish uchun menga stikerlar toʻplami yoki uning stikeriga havolani yuboring
+        👌 <b>Send me the sticker from the sticker pack you want to publish</b>
+
+        <i>You can publish any sticker pack that belong to you, even if they are created elsewhere</i>
+      owner_proof: |
+        <b>To verify ownership of this sticker pack, you need to follow a few simple steps:</b>
+        1. Open @Stickers bot
+        2. Send <code>/packstats</code> command
+        3. Find and choose the required sticker pack
+        4. Forward the received message to the bot
       publish_new_access_denied: |
         <b>Xato!</b>
         Bu stikerlar toʻplami sizniki emas.
@@ -348,6 +401,24 @@ scenes:
         You can edit the stickerpack search information by selecting the stickerpack with the /packs command.
 
         <i>We remind you that the statistics of your sticker pack can be viewed through the official bot @Stickers</i>
+  frame:
+    select_type: |
+      <a href="${example}">&#8203;</a><b>Choose frame type:</b>
+      Frame is a transparent background around the sticker
+
+      <code>square</code> — the rectangular shape of the frame, that is, it will not be changed in any way
+      <code>lite</code> — the corners will be cut a little
+      <code>rounded</code> — the corners will be rounded
+      <code>circle</code> — the frame will be in the form of a circle
+
+      <i>In the future, you may use the /frame command to set the type of frame</i>
+    types:
+      square: '1. Square'
+      lite: '2. Lite'
+      rounded: '3. Rounded'
+      circle: '4. Circle'
+    selected: |
+      <b>Selected frame type:</b> ${type}
   leave: |
     Harakat bekor qilindi.
   btn:

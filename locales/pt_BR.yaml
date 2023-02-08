@@ -4,25 +4,27 @@ ratelimit: Não tão frequente!
 cmd:
   start:
     info: |
-      Olá, <b>${name}</b>!
+      Hi, <b>${name}</b>!
 
-      Me envie um sticker, GIF, vídeo, arquivo, ou foto e vou adicionar ao seu pacote de stickers.
-      Quer remover do seu pacote de stickers? É só enviar novamente.
+      Send me a sticker, GIF, video, file, or photo and I will add it to your sticker pack.
+      Want to remove it from your sticker pack? Send it once again.
 
-      /packs - liste os seus pacotes
-      /new - crie um novo pacote de stickers
+      /packs - get your packs
+      /new - create a new sticker pack
 
-      /original - encontre o sticker original
-      /restore - restore um pacote de sticker
-      /copy - copie um pacote de sticker
-      /emoji - mude o emoji vinculado ao pacote de sticker atual
-      /round - deixe o vídeo redondo
-      /lang - altere o idioma
+      /original - find original sticker
+      /restore - restore a sticker pack
+      /copy - copy a sticker pack
+      /emoji - change emoji suffix for current sticker pack
+      /frame - сhange frame for current sticker pack
+      /lang - change language
 
-      /donate - apoie o desenvolvedor
+      /donate - support the developer
+
+      🧑‍🔧 Contacts: @ly_oBot
 
       GitHub: https://github.com/LyoSU/fStikBot
-      👨🏻‍💻 Canal do desenvolvedor: @LyBlog
+      👨🏻‍💻 Developer channel: @LyBlog
     catalog: |
       <b>😻 Você pode encontrar novos pacotes de sticker no nosso catálogo</b>
 
@@ -33,6 +35,8 @@ cmd:
       start: '📜 Menu inicial'
       packs: '📁 Pacotes de stickers'
       new: '📥 Crie um novo pacote de stickers'
+      catalog: '📖 Catalog'
+      publish: '🌐 Publish sticker pack in catalog'
       original: '🔍 Encontre o sticker original'
       restore: '🔀 Restaure um pacote de sticker'
       copy: '📋 Copie um pacote de sticker'
@@ -43,6 +47,11 @@ cmd:
     btn:
       new: '📥 Crie novo'
       catalog: '💖 Abrir catálogo'
+      catalog_mini: '💖 Catalog'
+      catalog_browser: '🌐 Open in browser'
+      catalog_browser_mini: '🌐 In browser'
+      catalog_app: '📱 Download Android app'
+      catalog_app_mini: '📱 Android app'
   inline:
     switch_pm: Selecione o pacote de sticker
   restore: |
@@ -103,6 +112,34 @@ cmd:
       Os vídeos agora terão formato arrendondado
     disabled: |
       Os vídeos não terão mais formato arrendondado
+coedit:
+  info: |
+    <b>👥 Co-editing sticker pack</b>
+
+    Link for co-editing <a href="${link}">${title}</a>:
+    <code>${colink}</code>
+
+    <b>How to use:</b>
+    1. Send the link to the person you want to give access to the sticker pack
+    2. After clicking on the link, they need to press "start" and they will be added to the editors
+    3. The editor can add, delete and edit stickers in the sticker pack
+
+    <b>Editors:</b>
+    ${editors}
+
+    <i>To remove editors, you need to reset the link</i>
+  no_editors: |
+    No editors yet
+  btn:
+    send: '📤 Send link'
+    reset: '🔁 Reset link'
+  share: |
+    Follows the link and press "start" to co-edit the sticker pack "${title}"
+  reset: |
+    <b>🔁 Link reset successful</b>
+
+    New link for co-editing <a href="${link}">${title}</a>:
+    <code>${colink}</code>
 callback:
   pack:
     answerCbQuer:
@@ -139,6 +176,7 @@ callback:
       restore: '✅ Restaurar'
       use_pack: Usar pacote de sticker
       search_gif: Procurar GIF
+      coedit: '👥 Co-edit'
       catalog_add: '🗂 Adicionar ao catálogo'
       catalog_edit: '📝 Editar no catálogo'
       catalog_delete: '🗑 Excluir do catálogo'
@@ -215,6 +253,10 @@ sticker:
 
         O bot ainda está processando o vídeo anterior...
         Você pode apoiar o desenvolvimento do bot (/donate) para aumentar a prioridade de processamento e permitir adicionar mais de um sticker à fila.
+      timeout: |
+        <b>Error!</b>
+
+        Try again later.
       convert: |
         <b>Erro!</b>
         Infelizmente, o bot não conseguiu converter o seu vídeo.
@@ -298,7 +340,15 @@ scenes:
   catalog:
     publish:
       publish_new: |
-        Para publicar um pacote de stickers de terceiros, me envie o link do pacote ou de um sticker dele
+        👌 <b>Send me the sticker from the sticker pack you want to publish</b>
+
+        <i>You can publish any sticker pack that belong to you, even if they are created elsewhere</i>
+      owner_proof: |
+        <b>To verify ownership of this sticker pack, you need to follow a few simple steps:</b>
+        1. Open @Stickers bot
+        2. Send <code>/packstats</code> command
+        3. Find and choose the required sticker pack
+        4. Forward the received message to the bot
       publish_new_access_denied: |
         <b>Erro!</b>
         O pacote de sticker não é seu.
@@ -350,6 +400,24 @@ scenes:
         Você pode editar as informações de pesquisa do pacote selecionando-o com o comando /packs.
 
         <i>Lembramos que as estatísticas do seu pacote de sticker podem ser visualizadas através do bot oficial @Stickers</i>
+  frame:
+    select_type: |
+      <a href="${example}">&#8203;</a><b>Choose frame type:</b>
+      Frame is a transparent background around the sticker
+
+      <code>square</code> — the rectangular shape of the frame, that is, it will not be changed in any way
+      <code>lite</code> — the corners will be cut a little
+      <code>rounded</code> — the corners will be rounded
+      <code>circle</code> — the frame will be in the form of a circle
+
+      <i>In the future, you may use the /frame command to set the type of frame</i>
+    types:
+      square: '1. Square'
+      lite: '2. Lite'
+      rounded: '3. Rounded'
+      circle: '4. Circle'
+    selected: |
+      <b>Selected frame type:</b> ${type}
   leave: |
     Ação cancelada.
   btn:

@@ -1,9 +1,40 @@
 const fs = require('fs')
 const path = require('path')
+const { Api, TelegramClient } = require('telegram')
+const { StringSession } = require("telegram/sessions")
+const Telegram = require('telegraf/telegram')
 const Scene = require('telegraf/scenes/base')
 const Markup = require('telegraf/markup')
 const I18n = require('telegraf-i18n')
 const mongoose = require('mongoose')
+const { db } = require('../database')
+
+function stickerSetIdToOwnerId (u64) {
+  let u32 = u64 >> 32n
+
+  if ((u64 >> 24n & 0xffn) === 0xffn) {
+    return parseInt((u64 >> 32n) + 0x100000000n)
+  }
+  return parseInt(u32)
+}
+
+let telegramClinet = {}
+
+;(async () => {
+  telegramClinet = new TelegramClient(
+    new StringSession(""),
+    parseInt(process.env.TELEGRAM_API_ID),
+    process.env.TELEGRAM_API_HASH,
+    { connectionRetries: 5 }
+  );
+  await telegramClinet.start({
+    botAuthToken: process.env.BOT_TOKEN,
+  })
+
+  telegramClinet.setLogLevel("error") // only errors
+})()
+
+const telegram = new Telegram(process.env.BOT_TOKEN);
 
 const { match } = I18n
 const i18n = new I18n({
@@ -25,6 +56,35 @@ const escapeHTML = (str) => str.replace(
   }[tag] || tag)
 )
 
+const createStickerSet = async (packName, userInfo) => {
+  let stickerSet = await db.StickerSet.findOne({
+    name: packName
+  })
+
+  if (!stickerSet) {
+    const stickerSetInfo = await telegram.getStickerSet(packName)
+
+    stickerSet = new db.StickerSet({
+      _id: mongoose.Types.ObjectId(),
+      owner: userInfo,
+      name: stickerSetInfo.name,
+      title: stickerSetInfo.title,
+      animated: stickerSetInfo.is_animated,
+      video: stickerSetInfo.is_video,
+      create: false,
+      thirdParty: true
+    })
+  }
+
+  if (userInfo.moderator === true) {
+    stickerSet.about.verified = true
+  }
+
+  await stickerSet.save()
+
+  return stickerSet
+}
+
 const catalogPublishNew = new Scene('catalogPublishNew')
 
 catalogPublishNew.enter((ctx) => {
@@ -38,58 +98,86 @@ catalogPublishNew.enter((ctx) => {
 })
 
 catalogPublishNew.on(['sticker', 'text'], async (ctx) => {
-  if (ctx.session.userInfo.moderator !== true) {
-    return ctx.replyWithHTML(ctx.i18n.t('scenes.catalog.publish.publish_new_access_denied'))
-  }
+  ctx.session.scene.publish = {}
 
   let packName
 
   if (ctx.message.sticker) {
     packName = ctx.message.sticker.set_name
   } else {
-    const messageTextMatch = ctx.message.text.match(/addstickers\/(.*)/)
+    const messageTextMatch = ctx.message.text.match(/(addstickers)\/(.*)/)
 
-    if(!messageTextMatch) {
+    if(!messageTextMatch || !messageTextMatch[2]) {
       return ctx.scene.reenter()
     }
 
-    packName = messageTextMatch[1]
+    packName = messageTextMatch[2]
   }
 
   if (!packName) {
     return ctx.scene.reenter()
   }
 
-  let stickerSet = await ctx.db.StickerSet.findOne({
-    name: packName
-  })
+  const getStickerSetInfo = await telegramClinet.invoke(new Api.messages.GetStickerSet({
+    stickerset: new Api.InputStickerSetShortName({
+      shortName: packName
+    }),
+    hash: 0
+  })).catch(() => {})
 
-  if (!stickerSet) {
-    const stickerSetInfo = await ctx.telegram.getStickerSet(packName)
-
-    stickerSet = new ctx.db.StickerSet({
-      _id: mongoose.Types.ObjectId(),
-      owner: ctx.session.userInfo,
-      name: stickerSetInfo.name,
-      title: stickerSetInfo.title,
-      animated: stickerSetInfo.is_animated,
-      video: stickerSetInfo.is_video,
-      create: false,
-      thirdParty: true
-    })
+  if (!getStickerSetInfo) {
+    return ctx.scene.reenter()
   }
+
+  const packOwner = stickerSetIdToOwnerId(getStickerSetInfo.set.id.value)
+
+  if (
+    ctx.session.userInfo.moderator !== true
+    && packOwner !== ctx.from.id
+    ) {
+      ctx.session.scene.publish.packName = packName
+    return ctx.scene.enter('catalogPublishOwnerProof')
+  }
+
+  ctx.session.scene.publish.stickerSet = await createStickerSet(packName, ctx.session.userInfo)
 
   if (ctx.session.userInfo.moderator === true) {
-    stickerSet.about.verified = true
+    return ctx.scene.enter('catalogEnterDescription')
+  } else {
+    return ctx.scene.enter('catalogPublish')
   }
+})
 
-  await stickerSet.save()
+const catalogPublishOwnerProof = new Scene('catalogPublishOwnerProof')
 
-  ctx.session.scene.publish = {
-    stickerSet: stickerSet._id
+catalogPublishOwnerProof.enter((ctx) => {
+  ctx.replyWithHTML(ctx.i18n.t('scenes.catalog.publish.owner_proof'), {
+    reply_markup: Markup.keyboard([
+      [
+        ctx.i18n.t('scenes.btn.cancel')
+      ]
+    ]).resize()
+  })
+})
+
+catalogPublishOwnerProof.on('text', async (ctx) => {
+  if (ctx.message.forward_from && ctx.message.forward_from.id === 429000) {
+    if (!ctx.message.entities) {
+      return ctx.scene.reenter()
+    }
+
+    if (
+      !ctx.message.entities[0].url.match(ctx.session.scene.publish.packName)
+      ) {
+      return ctx.scene.reenter()
+    }
+
+    ctx.session.scene.publish.stickerSet = await createStickerSet(ctx.session.scene.publish.packName, ctx.session.userInfo)
+
+    return ctx.scene.enter('catalogPublish')
+  } else {
+    return ctx.scene.reenter()
   }
-
-  return ctx.scene.enter('catalogPublish')
 })
 
 const catalogPublish = new Scene('catalogPublish')
@@ -342,7 +430,7 @@ catalogPublishConfirm.hears(match('scenes.catalog.publish.button_confirm'), asyn
     languages: publish.languages,
   })
 
-  if (!publish.stickerSet.publishDate) {
+  if (!publish.stickerSet.public) {
     publish.stickerSet.publishDate = new Date()
   }
 
@@ -365,6 +453,7 @@ catalogPublishConfirm.hears(match('scenes.catalog.publish.button_confirm'), asyn
 
 module.exports = [
   catalogPublishNew,
+  catalogPublishOwnerProof,
   catalogPublish,
   catalogEnterDescription,
   catalogSelectLanguage,

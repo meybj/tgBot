@@ -29,7 +29,7 @@ module.exports = async (ctx) => {
 
     case 'document':
       if (
-        ['image/jpeg', 'image/png'].includes(ctx.message.document.mime_type) ||
+        ['image/jpeg', 'image/png', 'image/gif'].includes(ctx.message.document.mime_type) ||
         ctx.message.document.mime_type.match('video')
       ) {
         stickerFile = ctx.message.document
@@ -86,6 +86,7 @@ module.exports = async (ctx) => {
     }
     if (ctx.message.caption?.includes('roundit')) stickerFile.video_note = true
     if (ctx.message.caption?.includes('cropit')) stickerFile.forceCrop = true
+    if (ctx.message.photo && ctx.message.caption?.includes('rmbg')) stickerFile.removeBg = true
     const originalSticker = await ctx.db.Sticker.findOne({
       stickerSet,
       fileUniqueId: stickerFile.file_unique_id,
@@ -125,25 +126,25 @@ module.exports = async (ctx) => {
         messageText = result.messageText
         replyMarkup = result.replyMarkup
 
-        if (typeof stickerSet?.publishDate === 'undefined' && !stickerSet?.animated && !stickerSet?.inline) {
-          const countStickers = await ctx.db.Sticker.count({
-            stickerSet,
-            deleted: false
-          })
+        // if (typeof stickerSet?.publishDate === 'undefined' && !stickerSet?.animated && !stickerSet?.inline) {
+        //   const countStickers = await ctx.db.Sticker.count({
+        //     stickerSet,
+        //     deleted: false
+        //   })
 
-          if ([10, 15, 30, 50, 80, 120].includes(countStickers)) {
-            setTimeout(async () => {
-              await ctx.replyWithHTML(ctx.i18n.t('sticker.add.catalog_offer', {
-                title: escapeHTML(stickerSet.title),
-                link: `${ctx.config.stickerLinkPrefix}${stickerSet.name}`
-              }), {
-                reply_markup: Markup.inlineKeyboard([
-                  Markup.callbackButton(ctx.i18n.t('callback.pack.btn.catalog_add'), `catalog:publish:${stickerSet.id}`)
-                ])
-              })
-            }, 1000 * 2)
-          }
-        }
+        //   if ([15, 50, 80, 120].includes(countStickers)) {
+        //     setTimeout(async () => {
+        //       await ctx.replyWithHTML(ctx.i18n.t('sticker.add.catalog_offer', {
+        //         title: escapeHTML(stickerSet.title),
+        //         link: `${ctx.config.stickerLinkPrefix}${stickerSet.name}`
+        //       }), {
+        //         reply_markup: Markup.inlineKeyboard([
+        //           Markup.callbackButton(ctx.i18n.t('callback.pack.btn.catalog_add'), `catalog:publish:${stickerSet.id}`)
+        //         ])
+        //       })
+        //     }, 1000 * 2)
+        //   }
+        // }
       } else {
         ctx.session.previousSticker = {
           file: stickerFile

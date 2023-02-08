@@ -20,9 +20,9 @@ const {
   handleRestorePack,
   handleCatalog,
   handleCopyPack,
+  handleCoedit,
   handleLanguage,
   handleEmoji,
-  handleRoundVideo,
   handleStickerUpade,
   handleInlineQuery
 } = require('./handlers')
@@ -40,6 +40,14 @@ const bot = new Telegraf(process.env.BOT_TOKEN, {
     webhookReply: false
   },
   handlerTimeout: 1
+})
+
+bot.use((ctx, next) => {
+  next().catch((error) => {
+    handleError(error, ctx)
+    return true
+  })
+  return true
 })
 
 bot.on(['channel_post', 'edited_channel_post', 'poll'], () => {})
@@ -60,8 +68,6 @@ bot.use(rateLimit({
   limit: 3,
   onLimitExceeded: (ctx) => ctx.reply(ctx.i18n.t('ratelimit'))
 }))
-
-bot.catch(handleError)
 
 const limitPublicPack = Composer.optional((ctx) => {
   return ctx.session?.userInfo?.stickerSet?.passcode === 'public'
@@ -93,14 +99,14 @@ bot.use(
       } else if (ctx.from && ctx.chat) {
         return `${ctx.from.id}:${ctx.chat.id}`
       }
-      return null
+      return ctx.update.update_id
     }
   })
 )
 
 // response time logger
 bot.use(async (ctx, next) => {
-  if (!ctx.session.chainActions) ctx.session.chainActions = []
+  if (ctx.session && !ctx.session.chainActions) ctx.session.chainActions = []
   let action
 
   if (ctx.message && ctx.message.text) action = ctx.message.text
@@ -163,10 +169,10 @@ bot.action(/new_pack/, (ctx) => ctx.scene.enter('сhoosePackType'))
 bot.hears(['/donate', '/club', '/start club', match('cmd.start.btn.club')], handleClub)
 bot.hears(/addstickers\/(.*)/, handleCopyPack)
 bot.command('publish', (ctx) => ctx.scene.enter('catalogPublishNew'))
+bot.command('frame', (ctx) => ctx.scene.enter('packFrame'))
 bot.command('catalog', handleCatalog)
 bot.command('public', handleSelectPack)
 bot.command('emoji', handleEmoji)
-bot.command('round', handleRoundVideo)
 bot.command('copy', (ctx) => ctx.replyWithHTML(ctx.i18n.t('cmd.copy')))
 bot.command('restore', (ctx) => ctx.replyWithHTML(ctx.i18n.t('cmd.restore')))
 bot.command('original', (ctx) => ctx.scene.enter('originalSticker'))
@@ -175,6 +181,7 @@ bot.action(/catalog:publish:(.*)/, (ctx) => ctx.scene.enter('catalogPublish'))
 bot.command('lang', handleLanguage)
 bot.command('error', ctx => ctx.replyWithHTML(error))
 
+bot.use(handleCoedit)
 bot.use(handleInlineQuery)
 
 // sticker detect

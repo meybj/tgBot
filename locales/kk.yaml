@@ -16,10 +16,12 @@ cmd:
       /restore - restore a sticker pack
       /copy - copy a sticker pack
       /emoji - change emoji suffix for current sticker pack
-      /round - round shape video
+      /frame - сhange frame for current sticker pack
       /lang - change language
 
       /donate - support the developer
+
+      🧑‍🔧 Contacts: @ly_oBot
 
       GitHub: https://github.com/LyoSU/fStikBot
       👨🏻‍💻 Developer channel: @LyBlog
@@ -33,6 +35,8 @@ cmd:
       start: '📜 Бастапқы мәзір'
       packs: '📁 Стикерпактарым'
       new: '📥 Жаңа стикерпак құру'
+      catalog: '📖 Catalog'
+      publish: '🌐 Publish sticker pack in catalog'
       original: '🔍 Стикердің түпнұсқасын табу'
       restore: '🔀 Стикерпакті қалпына келтіру'
       copy: '📋 Стикерпакті көшіру'
@@ -43,6 +47,11 @@ cmd:
     btn:
       new: '📥 Жаңасын құру'
       catalog: '💖 Open catalog'
+      catalog_mini: '💖 Catalog'
+      catalog_browser: '🌐 Open in browser'
+      catalog_browser_mini: '🌐 In browser'
+      catalog_app: '📱 Download Android app'
+      catalog_app_mini: '📱 Android app'
   inline:
     switch_pm: Стикерпак таңдау
   restore: |
@@ -103,6 +112,34 @@ cmd:
       Videos will now have a rounded shape
     disabled: |
       Videos will no longer have a rounded shape
+coedit:
+  info: |
+    <b>👥 Co-editing sticker pack</b>
+
+    Link for co-editing <a href="${link}">${title}</a>:
+    <code>${colink}</code>
+
+    <b>How to use:</b>
+    1. Send the link to the person you want to give access to the sticker pack
+    2. After clicking on the link, they need to press "start" and they will be added to the editors
+    3. The editor can add, delete and edit stickers in the sticker pack
+
+    <b>Editors:</b>
+    ${editors}
+
+    <i>To remove editors, you need to reset the link</i>
+  no_editors: |
+    No editors yet
+  btn:
+    send: '📤 Send link'
+    reset: '🔁 Reset link'
+  share: |
+    Follows the link and press "start" to co-edit the sticker pack "${title}"
+  reset: |
+    <b>🔁 Link reset successful</b>
+
+    New link for co-editing <a href="${link}">${title}</a>:
+    <code>${colink}</code>
 callback:
   pack:
     answerCbQuer:
@@ -141,6 +178,7 @@ callback:
       restore: '✅ Restore'
       use_pack: Use sticker pack
       search_gif: Search GIF
+      coedit: '👥 Co-edit'
       catalog_add: '🗂 Add to catalog'
       catalog_edit: '📝 Edit in catalog'
       catalog_delete: '🗑 Delete from catalog'
@@ -217,6 +255,10 @@ sticker:
 
         Bot is still processing the previous video...
         You can support bot development (/donate) to increase the priority of processing and the ability to add more than one sticker to the queue.
+      timeout: |
+        <b>Error!</b>
+
+        Try again later.
       convert: |
         <b>Error!</b>
         Unfortunately, the bot was unable to convert your video.
@@ -300,7 +342,15 @@ scenes:
   catalog:
     publish:
       publish_new: |
-        To publish a third-party sticker pack, send me a link to the sticker pack or its sticker
+        👌 <b>Send me the sticker from the sticker pack you want to publish</b>
+
+        <i>You can publish any sticker pack that belong to you, even if they are created elsewhere</i>
+      owner_proof: |
+        <b>To verify ownership of this sticker pack, you need to follow a few simple steps:</b>
+        1. Open @Stickers bot
+        2. Send <code>/packstats</code> command
+        3. Find and choose the required sticker pack
+        4. Forward the received message to the bot
       publish_new_access_denied: |
         <b>Error!</b>
         This sticker pack is not yours.
@@ -353,6 +403,24 @@ scenes:
         You can edit the stickerpack search information by selecting the stickerpack with the /packs command.
 
         <i>We remind you that the statistics of your sticker pack can be viewed through the official bot @Stickers</i>
+  frame:
+    select_type: |
+      <a href="${example}">&#8203;</a><b>Choose frame type:</b>
+      Frame is a transparent background around the sticker
+
+      <code>square</code> — the rectangular shape of the frame, that is, it will not be changed in any way
+      <code>lite</code> — the corners will be cut a little
+      <code>rounded</code> — the corners will be rounded
+      <code>circle</code> — the frame will be in the form of a circle
+
+      <i>In the future, you may use the /frame command to set the type of frame</i>
+    types:
+      square: '1. Square'
+      lite: '2. Lite'
+      rounded: '3. Rounded'
+      circle: '4. Circle'
+    selected: |
+      <b>Selected frame type:</b> ${type}
   leave: |
     Action canceled.
   btn:
